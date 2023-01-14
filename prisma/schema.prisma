@@ -1,0 +1,88 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  name         String?
+  categoryUser String
+  role         Role     @default(USER)
+  createdAt    DateTime @default(now())
+}
+
+model Outfitter {
+  id                Int          @id @default(autoincrement())
+  name              String
+  street            String?
+  number            String?
+  CEP               Int?
+  categoryOutfitter String
+  categoryOutID     Int
+  technician        Technician[]
+}
+
+model Client {
+  id           Int      @id @default(autoincrement())
+  name         String   @unique
+  numberStores String?
+  store        Stores[]
+}
+
+model Stores {
+  id          Int         @id @default(autoincrement())
+  name        String
+  street      String?
+  number      String?
+  CEP         Int?
+  clientName  Client      @relation(fields: [clientId], references: [id])
+  clientId    Int
+  responsible String
+  equipment   Equipment[]
+}
+
+model Technician {
+  id               Int                @id @default(autoincrement())
+  name             String
+  category         Outfitter          @relation(fields: [registerId], references: [id])
+  registerId       Int
+  servicePerformed ServicePerformed[]
+}
+
+model ServicePerformed {
+  id        Int         @id @default(autoincrement())
+  title     String
+  content   String?
+  complete  Boolean     @default(false)
+  author    Technician  @relation(fields: [authorId], references: [id])
+  authorId  Int
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  equipment Equipment[]
+}
+
+model Equipment {
+  id          Int              @id @default(autoincrement())
+  name        String
+  serie       String
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  storeName   Stores           @relation(fields: [storeId], references: [id])
+  storeId     Int
+  brand       String?
+  serviceName ServicePerformed @relation(fields: [serviceId], references: [id])
+  serviceId   Int
+}
+
+enum Role {
+  USER
+  ADMIN
+}
